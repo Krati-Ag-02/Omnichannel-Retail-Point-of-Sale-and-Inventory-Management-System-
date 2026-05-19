@@ -1,17 +1,28 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 
-function App() {
+import MainLayout from "./layouts/MainLayout"
+
+import Dashboard from "./pages/Dashboard"
+import Products from "./pages/Products"
+import Orders from "./pages/Orders"
+import POS from "./pages/POS"
+
+export default function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-5xl font-bold text-blue-500">
-        Frontend Setup Working
-      </h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route
+            path="/"
+            element={<Navigate to="/dashboard" />}
+          />
+
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/pos" element={<POS />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
-
-export default App
