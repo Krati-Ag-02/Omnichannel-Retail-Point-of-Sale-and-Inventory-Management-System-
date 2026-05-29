@@ -8,6 +8,6 @@
   - [x] Filter products by `product.productName` (case-insensitive)
   - [x] Render filtered products in Inventory Details table
   - [x] Keep Low Stock Alerts based on all products
-  - [ ] Commit with message: `git commit -m "Added product search functionality"`
+- [x] Commit with message: `git commit -m "Added product search functionality"`
 
 
