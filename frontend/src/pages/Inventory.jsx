@@ -8,7 +8,10 @@ export default function Inventory() {
   useEffect(() => {
     const load = async () => {
       const res = await axios.get('/products')
-      setProducts(res.data)
+      const data = res.data
+      // backend kabhi-kabhi response object { success, products } bhejta hai
+      // ya directly array bhejta hai
+      setProducts(data?.products ? data.products : (Array.isArray(data) ? data : []))
       setLoading(false)
     }
     load()
@@ -22,9 +25,16 @@ export default function Inventory() {
     setProducts(products.map((item) => item._id === id ? { ...item, quantity: newQuantity } : item))
   }
 
-  const lowStock = products.filter((item) => item.quantity <= 5)
+  const safeProducts = Array.isArray(products) ? products : []
+  const lowStock = safeProducts.filter((item) => item.quantity <= 5)
 
-  if (loading) return <div className="p-6 text-center">Loading inventory...</div>
+  if (loading) return (
+    <div className="flex min-h-[240px] items-center justify-center p-6 text-center">
+      <div className="rounded-3xl bg-white/80 px-6 py-4 text-slate-700 shadow-sm">
+        Loading inventory...
+      </div>
+    </div>
+  )
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">

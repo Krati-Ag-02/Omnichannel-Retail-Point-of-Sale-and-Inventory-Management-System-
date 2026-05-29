@@ -33,12 +33,20 @@ export default function POS() {
     setMessage('Order completed successfully.')
   }
 
-  const filteredProducts = products.filter((product) =>
-    product.productName.toLowerCase().includes(query.toLowerCase()) ||
+  const safeProducts = Array.isArray(products) ? products : []
+
+  const filteredProducts = safeProducts.filter((product) =>
+    product.productName?.toLowerCase().includes(query.toLowerCase()) ||
     product.category?.toLowerCase().includes(query.toLowerCase())
   )
 
-  if (loading) return <div className="p-6 text-center">Loading POS products...</div>
+  if (loading) return (
+    <div className="flex min-h-[240px] items-center justify-center p-6 text-center">
+      <div className="rounded-3xl bg-white/80 px-6 py-4 text-slate-700 shadow-sm">
+        Loading POS products...
+      </div>
+    </div>
+  )
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
