@@ -31,7 +31,9 @@ export default function Inventory() {
 
   const filteredProducts = useMemo(() => {
     const s = search.toLowerCase().trim()
-    return safeProducts.filter((p) => p.productName?.toLowerCase().includes(s))
+    return safeProducts.filter((p) =>
+      (p.productName || '').toLowerCase().includes(s)
+    )
   }, [safeProducts, search])
 
   if (loading)
