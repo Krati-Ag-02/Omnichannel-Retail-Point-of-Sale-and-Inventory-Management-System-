@@ -1,10 +1,13 @@
 # TODO
 
-- [ ] Edit Dashboard.jsx: add dummy fallback stats, ensure card labels exactly: Total Products, Low Stock, Total Sales, Revenue
-- [ ] Improve Dashboard.jsx loading/error safety
-- [ ] Edit Products.jsx: add category filter dropdown, stock status badge, pagination UI
-- [ ] Products.jsx: update loading/empty states (“Loading products...”, “No products found”)
-- [ ] Verify responsive layout (mobile/tablet spacing)
-- [ ] Run frontend checks (lint/build/start) if available
-- [ ] Make 3 commits as requested
+## Inventory + POS UI Enhancement
+
+### Task 1 — Product Search Feature
+- [x] Update `frontend/src/pages/Inventory.jsx`
+  - [x] Add `search` input state
+  - [x] Filter products by `product.productName` (case-insensitive)
+  - [x] Render filtered products in Inventory Details table
+  - [x] Keep Low Stock Alerts based on all products
+  - [ ] Commit with message: `git commit -m "Added product search functionality"`
+
 

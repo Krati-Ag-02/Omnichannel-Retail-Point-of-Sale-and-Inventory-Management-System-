@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import axios from '../api/axios'
 
 export default function Inventory() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -22,19 +23,25 @@ export default function Inventory() {
     if (!product) return
     const newQuantity = Math.max(0, product.quantity + delta)
     await axios.put(`/products/${id}`, { ...product, quantity: newQuantity })
-    setProducts(products.map((item) => item._id === id ? { ...item, quantity: newQuantity } : item))
+    setProducts(products.map((item) => (item._id === id ? { ...item, quantity: newQuantity } : item)))
   }
 
   const safeProducts = Array.isArray(products) ? products : []
   const lowStock = safeProducts.filter((item) => item.quantity <= 5)
 
-  if (loading) return (
-    <div className="flex min-h-[240px] items-center justify-center p-6 text-center">
-      <div className="rounded-3xl bg-white/80 px-6 py-4 text-slate-700 shadow-sm">
-        Loading inventory...
+  const filteredProducts = useMemo(() => {
+    const s = search.toLowerCase().trim()
+    return safeProducts.filter((p) => p.productName?.toLowerCase().includes(s))
+  }, [safeProducts, search])
+
+  if (loading)
+    return (
+      <div className="flex min-h-[240px] items-center justify-center p-6 text-center">
+        <div className="rounded-3xl bg-white/80 px-6 py-4 text-slate-700 shadow-sm">
+          Loading inventory...
+        </div>
       </div>
-    </div>
-  )
+    )
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -51,7 +58,9 @@ export default function Inventory() {
                     <div className="font-semibold">{product.productName}</div>
                     <div className="text-slate-600">Stock: {product.quantity}</div>
                   </div>
-                  <button onClick={() => updateStock(product._id, 10)} className="rounded bg-emerald-600 px-3 py-1 text-white">Restock +10</button>
+                  <button onClick={() => updateStock(product._id, 10)} className="rounded bg-emerald-600 px-3 py-1 text-white">
+                    Restock +10
+                  </button>
                 </div>
               </li>
             ))}
@@ -60,7 +69,16 @@ export default function Inventory() {
       </section>
 
       <section className="rounded bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">Inventory Details</h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold">Inventory Details</h2>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products..."
+            className="w-full rounded border px-4 py-3 sm:w-[260px]"
+          />
+        </div>
+
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-700">
             <thead>
@@ -71,17 +89,26 @@ export default function Inventory() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <tr key={product._id} className="border-b border-slate-100">
                   <td className="px-3 py-3">{product.productName}</td>
                   <td className="px-3 py-3">{product.category || '-'}</td>
-                  <td className={`px-3 py-3 font-semibold ${product.quantity <= 5 ? 'text-rose-600' : 'text-slate-800'}`}>{product.quantity}</td>
+                  <td
+                    className={`px-3 py-3 font-semibold ${product.quantity <= 5 ? 'text-rose-600' : 'text-slate-800'}`}
+                  >
+                    {product.quantity}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {filteredProducts.length === 0 && (
+            <div className="mt-4 text-center text-slate-500">No products found</div>
+          )}
         </div>
       </section>
     </div>
   )
 }
+
