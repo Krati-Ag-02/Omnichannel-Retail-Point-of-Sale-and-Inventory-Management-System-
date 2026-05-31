@@ -76,11 +76,64 @@ export default function POS() {
 
       <section className="rounded bg-white p-6 shadow-sm">
         <h2 className="text-xl font-semibold">Cart</h2>
-        {message && <div className="my-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{message}</div>}
+        {message && (
+          <div className="my-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+            {message}
+          </div>
+        )}
+
         {cart.length === 0 ? (
-          <p className="mt-4 text-slate-600">Select products to build a bill.</p>
+          <div className="mt-4 space-y-4">
+            <p className="text-center text-slate-600">Cart is empty</p>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded border border-slate-200 bg-slate-50 p-3">
+                <div className="text-xs text-slate-600">Total Items</div>
+                <div className="mt-1 text-lg font-semibold">0</div>
+              </div>
+              <div className="rounded border border-slate-200 bg-slate-50 p-3">
+                <div className="text-xs text-slate-600">Total Quantity</div>
+                <div className="mt-1 text-lg font-semibold">0</div>
+              </div>
+              <div className="rounded border border-slate-200 bg-slate-50 p-3">
+                <div className="text-xs text-slate-600">Total Amount</div>
+                <div className="mt-1 text-lg font-semibold">₹0.00</div>
+              </div>
+            </div>
+
+            <button
+              disabled
+              className="w-full cursor-not-allowed rounded bg-emerald-600/50 px-4 py-3 text-white"
+            >
+              Checkout
+            </button>
+          </div>
         ) : (
           <div className="mt-4 space-y-4">
+            {/* Cart summary */}
+            {(() => {
+              const totalItems = cart.length
+              const totalQty = cart.reduce((acc, item) => acc + (Number(item.quantity ?? 0) || 0), 0)
+              const totalAmt = Number(totalAmount ?? 0) || 0
+
+              return (
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-xs text-slate-600">Total Items</div>
+                    <div className="mt-1 text-lg font-semibold">{totalItems}</div>
+                  </div>
+                  <div className="rounded border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-xs text-slate-600">Total Quantity</div>
+                    <div className="mt-1 text-lg font-semibold">{totalQty}</div>
+                  </div>
+                  <div className="rounded border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-xs text-slate-600">Total Amount</div>
+                    <div className="mt-1 text-lg font-semibold">₹{totalAmt.toFixed(2)}</div>
+                  </div>
+                </div>
+              )
+            })()}
+
             {cart.map((item) => (
               <div key={item.product} className="flex items-center justify-between gap-3 rounded border border-slate-200 p-3">
                 <div>
@@ -94,13 +147,17 @@ export default function POS() {
                 </div>
               </div>
             ))}
+
             <div className="rounded border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-center justify-between text-slate-600">
                 <span>Total</span>
                 <span className="text-xl font-semibold">₹{totalAmount.toFixed(2)}</span>
               </div>
             </div>
-            <button onClick={checkout} className="w-full rounded bg-emerald-600 px-4 py-3 text-white hover:bg-emerald-700">Checkout</button>
+
+            <button onClick={checkout} className="w-full rounded bg-emerald-600 px-4 py-3 text-white hover:bg-emerald-700">
+              Checkout
+            </button>
           </div>
         )}
       </section>
