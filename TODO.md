@@ -1,13 +1,10 @@
-# TODO
+# Project TODO
 
-## Inventory + POS UI Enhancement
+## Task 1: POS Quantity Controls
+- [x] Fix CartContext cart item fields to match POS UI (name vs productName)
+- [x] Update updateQuantity logic so `-` at qty=1 removes item from cart (qty can go to 0)
+- [x] Verify POS totals auto-recalculate (totalAmount) after quantity changes
 
-### Task 1 — Product Search Feature
-- [x] Update `frontend/src/pages/Inventory.jsx`
-  - [x] Add `search` input state
-  - [x] Filter products by `product.productName` (case-insensitive)
-  - [x] Render filtered products in Inventory Details table
-  - [x] Keep Low Stock Alerts based on all products
-- [x] Commit with message: `git commit -m "Added product search functionality"`
+- [ ] Quick sanity test: add items, press +/-, confirm per-item qty + cart total
 
 
