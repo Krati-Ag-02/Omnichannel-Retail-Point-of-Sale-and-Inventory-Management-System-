@@ -1,10 +1,9 @@
-# Project TODO
+# TODO
 
-## Task 1: POS Quantity Controls
-- [x] Fix CartContext cart item fields to match POS UI (name vs productName)
-- [x] Update updateQuantity logic so `-` at qty=1 removes item from cart (qty can go to 0)
-- [x] Verify POS totals auto-recalculate (totalAmount) after quantity changes
-
-- [ ] Quick sanity test: add items, press +/-, confirm per-item qty + cart total
+- [x] Enhance POS page with keyboard shortcuts (Ctrl+K focus search, Esc clear, Enter add highlighted result).
+- [x] Add helper text: “Ctrl+K Search | Esc Clear”.
+- [x] Add UI highlighted state for search results and make Enter add that item.
+- [x] Ensure proper cleanup of keyboard event listeners to prevent memory leaks.
+- [ ] Verify POS functionality (add to cart + checkout) still works after changes.
 
 

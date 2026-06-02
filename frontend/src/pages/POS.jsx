@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import axios from '../api/axios'
 import { useCart } from '../context/CartContext'
 
@@ -7,16 +7,47 @@ export default function POS() {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
+  const [highlightedIndex, setHighlightedIndex] = useState(0)
+  const searchInputRef = useRef(null)
+
   const { cart, addToCart, updateQuantity, removeFromCart, clearCart, totalAmount } = useCart()
+
 
   useEffect(() => {
     const load = async () => {
+      const demoProducts = [
+        { productName: 'Laptop', category: 'Electronics', price: 50000, quantity: 10 },
+        { productName: 'Wireless Mouse', category: 'Accessories', price: 800, quantity: 25 },
+        { productName: 'Keyboard', category: 'Accessories', price: 1200, quantity: 15 },
+        { productName: 'Printer', category: 'Electronics', price: 8500, quantity: 3 }
+      ]
+
       const res = await axios.get('/products')
-      setProducts(res.data)
+      const data = res.data
+
+      // Some backends may respond as { success, products }
+      const apiProducts = data?.products ? data.products : data
+
+      // Only use demos when API returns no products.
+      if (Array.isArray(apiProducts) && apiProducts.length > 0) {
+        setProducts(apiProducts)
+      } else {
+        // Prevent duplicates: ensure unique by productName within demo set.
+        const uniqueByName = new Map()
+        for (const p of demoProducts) uniqueByName.set(p.productName, p)
+        const normalized = Array.from(uniqueByName.values()).map((p, idx) => ({
+          // POS expects `_id`.
+          _id: `demo-${idx}-${p.productName}`,
+          ...p
+        }))
+        setProducts(normalized)
+      }
+
       setLoading(false)
     }
     load()
   }, [])
+
 
   const handleAdd = (product) => {
     addToCart(product)
@@ -40,7 +71,63 @@ export default function POS() {
     product.category?.toLowerCase().includes(query.toLowerCase())
   )
 
+  useEffect(() => {
+    // Keep highlighted index within bounds when filtering changes
+    if (!filteredProducts.length) {
+      setHighlightedIndex(0)
+      return
+    }
+    setHighlightedIndex((prev) => Math.min(Math.max(prev, 0), filteredProducts.length - 1))
+  }, [query, filteredProducts.length])
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const target = e.target
+      const tagName = target?.tagName?.toLowerCase?.() || ''
+
+      const isCtrlK = e.ctrlKey && (e.key === 'k' || e.key === 'K')
+      const isEsc = e.key === 'Escape'
+      const isEnter = e.key === 'Enter'
+
+      if (isCtrlK) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        return
+      }
+
+      // Esc: clear search (regardless of focus)
+      if (isEsc) {
+        e.preventDefault()
+        setQuery('')
+        setHighlightedIndex(0)
+        return
+      }
+
+      if (isEnter) {
+        // If the user is typing in a different input, don't add to cart.
+        // (We allow Enter while focused on our search input.)
+        const activeEl = document.activeElement
+        const isOnSearchInput = activeEl === searchInputRef.current
+        const isOtherInput = tagName === 'input' || tagName === 'textarea'
+        if (isOtherInput && !isOnSearchInput) return
+
+        const product = filteredProducts[highlightedIndex]
+        if (product) {
+          e.preventDefault()
+          addToCart(product)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [addToCart, filteredProducts, highlightedIndex])
+
+
   if (loading) return (
+
     <div className="flex min-h-[240px] items-center justify-center p-6 text-center">
       <div className="rounded-3xl bg-white/80 px-6 py-4 text-slate-700 shadow-sm">
         Loading POS products...
@@ -56,21 +143,50 @@ export default function POS() {
             <h1 className="text-2xl font-semibold">POS</h1>
             <p className="text-sm text-slate-600">Add products to cart and checkout.</p>
           </div>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products" className="rounded border px-4 py-3" />
+          <div className="w-full sm:max-w-[360px]">
+            <input
+              ref={searchInputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search products"
+              className="w-full rounded border px-4 py-3"
+            />
+            <div className="mt-2 text-xs text-slate-500">Ctrl+K Search &nbsp;|&nbsp; Esc Clear</div>
+          </div>
+
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {filteredProducts.map((product) => (
-            <div key={product._id} className="rounded border border-slate-200 p-4">
+          {filteredProducts.map((product, index) => (
+            <div
+              key={product._id}
+              onClick={() => setHighlightedIndex(index)}
+              className={
+                `rounded border p-4 cursor-pointer transition ` +
+                (index === highlightedIndex
+                  ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-300'
+                  : 'border-slate-200 bg-white')
+              }
+            >
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="font-semibold">{product.productName}</div>
                   <div className="text-sm text-slate-500">₹{product.price.toFixed(2)}</div>
                 </div>
-                <button onClick={() => handleAdd(product)} className="rounded bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-700">Add</button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setHighlightedIndex(index)
+                    handleAdd(product)
+                  }}
+                  className="rounded bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-700"
+                >
+                  Add
+                </button>
               </div>
               <div className="mt-3 text-sm text-slate-500">Stock: {product.quantity}</div>
             </div>
           ))}
+
         </div>
       </section>
 

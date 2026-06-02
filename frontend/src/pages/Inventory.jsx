@@ -43,18 +43,44 @@ export default function Inventory() {
 
   useEffect(() => {
     const load = async () => {
+      // Development fallback products (only used when API returns empty)
+      const demoProducts = [
+        { productName: 'Laptop', category: 'Electronics', price: 50000, quantity: 10 },
+        { productName: 'Wireless Mouse', category: 'Accessories', price: 800, quantity: 25 },
+        { productName: 'Keyboard', category: 'Accessories', price: 1200, quantity: 15 },
+        { productName: 'Printer', category: 'Electronics', price: 8500, quantity: 3 }
+      ]
+
       try {
         const res = await axios.get('/products')
         const data = res.data
+
         // backend kabhi-kabhi response object { success, products } bhejta hai
         // ya directly array bhejta hai
-        setProducts(data?.products ? data.products : (Array.isArray(data) ? data : []))
+        const apiProducts = data?.products ? data.products : data
+
+        if (Array.isArray(apiProducts) && apiProducts.length > 0) {
+          setProducts(apiProducts)
+        } else {
+          // Prevent duplicates by productName within demo set
+          const uniqueByName = new Map()
+          for (const p of demoProducts) uniqueByName.set(p.productName, p)
+
+          const normalized = Array.from(uniqueByName.values()).map((p, idx) => ({
+            _id: `demo-${idx}-${p.productName}`,
+            ...p
+          }))
+
+          setProducts(normalized)
+        }
       } finally {
         setLoading(false)
       }
     }
+
     load()
   }, [])
+
 
   const updateStock = async (id, delta) => {
     const current = Array.isArray(products) ? products : []
