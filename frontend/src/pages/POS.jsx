@@ -12,6 +12,11 @@ export default function POS() {
 
   const { cart, addToCart, updateQuantity, removeFromCart, clearCart, totalAmount } = useCart()
 
+  // POS pricing breakdown (front-end only). Backend APIs remain unchanged.
+  const DISCOUNT_RATE = 0.05 // 5%
+  const TAX_RATE = 0.18 // 18%
+
+
 
   useEffect(() => {
     const load = async () => {
@@ -151,7 +156,8 @@ export default function POS() {
               placeholder="Search products"
               className="w-full rounded border px-4 py-3"
             />
-            <div className="mt-2 text-xs text-slate-500">Ctrl+K Search &nbsp;|&nbsp; Esc Clear</div>
+            <div className="mt-2 text-xs text-slate-500">Ctrl+K Search &nbsp;|&nbsp; Esc Clear &nbsp;|&nbsp; Enter Add Product</div>
+
           </div>
 
         </div>
@@ -264,16 +270,46 @@ export default function POS() {
               </div>
             ))}
 
-            <div className="rounded border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-center justify-between text-slate-600">
-                <span>Total</span>
-                <span className="text-xl font-semibold">₹{totalAmount.toFixed(2)}</span>
-              </div>
-            </div>
+            {(() => {
+              const subtotal = Number(totalAmount ?? 0) || 0
+              const discount = subtotal * DISCOUNT_RATE
+              const taxedBase = Math.max(0, subtotal - discount)
+              const tax = taxedBase * TAX_RATE
+              const grandTotal = taxedBase + tax
 
-            <button onClick={checkout} className="w-full rounded bg-emerald-600 px-4 py-3 text-white hover:bg-emerald-700">
-              Checkout
-            </button>
+              return (
+                <>
+                  <div className="rounded border border-slate-200 bg-slate-50 p-4">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>Subtotal</span>
+                        <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>Discount</span>
+                        <span className="font-medium">-₹{discount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>Tax</span>
+                        <span className="font-medium">₹{tax.toFixed(2)}</span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-slate-700">Grand Total</span>
+                        <span className="text-xl font-semibold">₹{grandTotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={checkout}
+                    className="w-full rounded bg-emerald-600 px-4 py-3 text-white hover:bg-emerald-700"
+                  >
+                    Checkout (₹{grandTotal.toFixed(2)})
+                  </button>
+                </>
+              )
+            })()}
+
           </div>
         )}
       </section>

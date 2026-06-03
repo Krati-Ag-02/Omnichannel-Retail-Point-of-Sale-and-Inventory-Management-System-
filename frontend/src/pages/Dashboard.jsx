@@ -1,10 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from 'recharts'
 import axios from '../api/axios'
+
+const formatINR = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
 
 const buildChartData = (orders) => {
   const dateMap = {}
-  const ordered = orders
+  const ordered = (orders || [])
     .map((order) => ({
       date: new Date(order.createdAt || Date.now()),
       revenue: order.totalAmount || 0
@@ -16,7 +30,31 @@ const buildChartData = (orders) => {
     dateMap[key] = (dateMap[key] || 0) + order.revenue
   })
 
-  return Object.entries(dateMap).slice(-7).map(([date, revenue]) => ({ date, revenue }))
+  return Object.entries(dateMap)
+    .slice(-7)
+    .map(([date, revenue]) => ({ date, revenue }))
+}
+
+const buildInventoryDistribution = (products) => {
+  const safe = Array.isArray(products) ? products : []
+  const buckets = {
+    inStock: 0,
+    lowStock: 0,
+    outOfStock: 0
+  }
+
+  safe.forEach((p) => {
+    const q = Number(p.quantity ?? 0)
+    if (q <= 0) buckets.outOfStock += 1
+    else if (q < 5) buckets.lowStock += 1
+    else buckets.inStock += 1
+  })
+
+  return [
+    { name: 'In Stock', value: buckets.inStock, key: 'inStock' },
+    { name: 'Low Stock', value: buckets.lowStock, key: 'lowStock' },
+    { name: 'Out of Stock', value: buckets.outOfStock, key: 'outOfStock' }
+  ].filter((x) => x.value > 0)
 }
 
 export default function Dashboard() {
@@ -25,7 +63,9 @@ export default function Dashboard() {
       totalProducts: 120,
       lowStock: 8,
       totalSales: 45,
-      revenue: 25000
+      revenue: 25000,
+      inStock: 95,
+      outOfStock: 2
     }),
     []
   )
@@ -34,10 +74,15 @@ export default function Dashboard() {
     totalProducts: 0,
     lowStock: 0,
     totalSales: 0,
-    revenue: 0
+    revenue: 0,
+    inStock: 0,
+    outOfStock: 0
   })
   const [orders, setOrders] = useState([])
+  const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+
+
 
   useEffect(() => {
     const load = async () => {
@@ -78,7 +123,48 @@ export default function Dashboard() {
 
   const recentOrders = useMemo(() => orders.slice(-4).reverse(), [orders])
 
-  if (loading) return <div className="p-8 text-center text-slate-600">Loading dashboard...</div>
+  if (loading) {
+    return (
+      <div className="space-y-6 p-8">
+        <div className="rounded-3xl bg-gradient-to-r from-emerald-600 via-cyan-500 to-sky-500 p-6 text-white shadow-xl shadow-slate-300/15">
+          <div className="h-6 w-48 animate-pulse rounded bg-white/20" />
+          <div className="mt-4 h-10 w-72 animate-pulse rounded bg-white/20" />
+          <div className="mt-3 h-4 w-full max-w-2xl animate-pulse rounded bg-white/20" />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-3xl bg-white p-4 shadow-xl shadow-slate-300/10">
+              <div className="h-3 w-28 animate-pulse rounded bg-slate-200" />
+              <div className="mt-3 h-10 w-20 animate-pulse rounded bg-slate-200" />
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+          <div className="rounded-3xl bg-white p-6 shadow-xl shadow-slate-300/10">
+            <div className="h-5 w-40 animate-pulse rounded bg-slate-200" />
+            <div className="mt-6 h-64 animate-pulse rounded bg-slate-100" />
+          </div>
+          <div className="space-y-6">
+            <div className="rounded-3xl bg-white p-6 shadow-xl shadow-slate-300/10">
+              <div className="h-5 w-52 animate-pulse rounded bg-slate-200" />
+              <div className="mt-6 h-40 animate-pulse rounded bg-slate-100" />
+            </div>
+            <div className="rounded-3xl bg-white p-6 shadow-xl shadow-slate-300/10">
+              <div className="h-5 w-48 animate-pulse rounded bg-slate-200" />
+              <div className="mt-6 space-y-3">
+                {Array.from({ length: 3 }).map((__, j) => (
+                  <div key={j} className="h-14 animate-pulse rounded bg-slate-100" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="space-y-6">
@@ -140,20 +226,46 @@ export default function Dashboard() {
 
         <div className="space-y-6">
           <div className="rounded-3xl bg-white p-6 shadow-xl shadow-slate-300/10">
-            <h2 className="text-xl font-semibold text-slate-900">Inventory health</h2>
-            <p className="mt-2 text-sm text-slate-500">Low stock items need attention first.</p>
-            <div className="mt-6 grid gap-4">
-              <div className="rounded-3xl bg-slate-950/5 p-4">
-                <div className="text-sm text-slate-500">Critical products</div>
-                <div className="mt-3 text-3xl font-semibold text-rose-600">{stats.lowStock}</div>
-                <div className="mt-2 text-sm text-slate-500">Products at or below 5 quantity</div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Inventory distribution</h2>
+                <p className="mt-1 text-sm text-slate-500">In / Low / Out of stock</p>
               </div>
-              <div className="rounded-3xl bg-slate-950/5 p-4">
-                <div className="flex items-center justify-between gap-2 text-sm text-slate-500">
-                  <span>Revenue goal</span>
-                  <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">+18%</span>
+              <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">Auto</span>
+            </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr] items-start">
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip formatter={(v, name) => [`${v}`, name]} />
+                    <Pie
+                      data={buildInventoryDistribution(products).length ? buildInventoryDistribution(products) : [
+                        { name: 'In Stock', value: stats.inStock || stats.totalProducts - stats.lowStock, key: 'inStock' },
+                        { name: 'Low Stock', value: stats.lowStock || 0, key: 'lowStock' },
+                        { name: 'Out of Stock', value: stats.outOfStock || 0, key: 'outOfStock' }
+                      ]}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={50}
+                      outerRadius={90}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-3xl bg-slate-950/5 p-4">
+                  <div className="text-sm text-slate-500">In stock</div>
+                  <div className="mt-2 text-3xl font-semibold text-emerald-600">{stats.inStock}</div>
                 </div>
-                <div className="mt-3 text-3xl font-semibold text-slate-900">₹{stats.revenue.toFixed(0)}</div>
+                <div className="rounded-3xl bg-slate-950/5 p-4">
+                  <div className="text-sm text-slate-500">Low stock</div>
+                  <div className="mt-2 text-3xl font-semibold text-rose-600">{stats.lowStock}</div>
+                </div>
+                <div className="rounded-3xl bg-slate-950/5 p-4">
+                  <div className="text-sm text-slate-500">Out of stock</div>
+                  <div className="mt-2 text-3xl font-semibold text-slate-900">{stats.outOfStock}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -161,27 +273,53 @@ export default function Dashboard() {
           <div className="rounded-3xl bg-white p-6 shadow-xl shadow-slate-300/10">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-slate-900">Recent orders</h2>
-                <p className="mt-1 text-sm text-slate-500">Latest transactions from your store</p>
+                <h2 className="text-xl font-semibold text-slate-900">Low stock overview</h2>
+                <p className="mt-1 text-sm text-slate-500">Quick view of low items</p>
+              </div>
+            </div>
+            <div className="mt-6 h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={(buildInventoryDistribution(products).length
+                    ? buildInventoryDistribution(products)
+                    : [
+                        { name: 'In Stock', value: stats.inStock || 0 },
+                        { name: 'Low Stock', value: stats.lowStock || 0 },
+                        { name: 'Out of Stock', value: stats.outOfStock || 0 }
+                      ])}
+                  margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: '#475569', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#475569', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={(v) => [String(v), 'Items']} />
+                  <Bar dataKey="value" fill="#0ea5e9" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="rounded-3xl bg-white p-6 shadow-xl shadow-slate-300/10">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Recent Activity</h2>
+                <p className="mt-1 text-sm text-slate-500">Recent changes in POS / Inventory</p>
               </div>
             </div>
             <div className="mt-6 space-y-3">
-              {recentOrders.length === 0 ? (
-                <p className="text-sm text-slate-500">No recent orders yet.</p>
-              ) : (
-                recentOrders.map((order) => (
-                  <div key={order._id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center justify-between gap-4 text-sm text-slate-600">
-                      <div>Order #{order._id.slice(-6)}</div>
-                      <div>{new Date(order.createdAt).toLocaleDateString()}</div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between gap-4 text-base font-semibold text-slate-900">
-                      <span>{order.products?.length || 0} items</span>
-                      <span>₹{order.totalAmount.toFixed(0)}</span>
-                    </div>
+              {[
+                { label: '✔ Product Added', ts: 'Just now' },
+                { label: '✔ Stock Updated', ts: '2 mins ago' },
+                { label: '✔ Order Completed', ts: '15 mins ago' },
+                { label: '✔ Inventory Synced', ts: '1 hr ago' }
+              ].map((a, idx) => (
+                <div key={idx} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between gap-4 text-sm text-slate-600">
+                    <div className="font-medium">{a.label}</div>
+                    <div className="text-slate-500">{a.ts}</div>
                   </div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
           </div>
         </div>

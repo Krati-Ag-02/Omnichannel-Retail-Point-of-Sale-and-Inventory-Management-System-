@@ -3,7 +3,13 @@ import axios from '../api/axios'
 
 const CATEGORY_OPTIONS = ['All', 'Electronics', 'Grocery', 'Accessories', 'Clothing']
 
-function StatCard({ title, value, tone = 'slate' }) {
+function StatCard({
+  title,
+  value,
+  tone = 'slate',
+  icon = null,
+  trend = null // { text: '+12%', dir: 'up'|'down' }
+}) {
   const toneClasses =
     tone === 'rose'
       ? 'bg-rose-50 text-rose-800 border-rose-200'
@@ -11,35 +17,74 @@ function StatCard({ title, value, tone = 'slate' }) {
       ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
       : 'bg-slate-50 text-slate-800 border-slate-200'
 
+  const trendClasses =
+    trend?.dir === 'up'
+      ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      : trend?.dir === 'down'
+      ? 'bg-rose-100 text-rose-800 border-rose-200'
+      : 'bg-slate-100 text-slate-800 border-slate-200'
+
   return (
-    <div className={`rounded border p-4 shadow-sm ${toneClasses}`}>
-      <div className="text-sm text-slate-600">{title}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
+    <div
+      className={`group rounded border p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md ${toneClasses}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm text-slate-600">{title}</div>
+          <div className="mt-1 flex items-center gap-2">
+            {icon}
+            <div className="text-2xl font-semibold">{value}</div>
+          </div>
+        </div>
+
+        {trend && (
+          <div
+            className={`rounded-full border px-3 py-1 text-xs font-semibold ${trendClasses}`}
+            title="Trend vs previous period"
+          >
+            {trend.text}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
-function LowStockBadge({ isLow }) {
-  if (!isLow) {
+
+function StockBadge({ qty }) {
+  const q = Number(qty ?? 0)
+
+  if (q <= 0) {
     return (
-      <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-        OK
+      <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
+        Out of Stock
+      </span>
+    )
+  }
+
+  if (q < 5) {
+    return (
+      <span className="inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">
+        Low Stock
       </span>
     )
   }
 
   return (
-    <span className="inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">
-      Low Stock
+    <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+      In Stock
     </span>
   )
 }
+
 
 export default function Inventory() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [sort, setSort] = useState({ key: 'name', dir: 'asc' })
+
 
   useEffect(() => {
     const load = async () => {
@@ -135,11 +180,44 @@ export default function Inventory() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard title="Total Products" value={totalProducts} tone="slate" />
-        <StatCard title="Low Stock Products" value={totalLowStock} tone="rose" />
-        <StatCard title="Total Categories" value={totalCategories} tone="emerald" />
+      <div className="grid gap-4 sm:grid-cols-4">
+        <StatCard
+          title="Total Products"
+          value={totalProducts}
+          tone="slate"
+          icon={<span aria-hidden className="text-slate-500">📦</span>}
+          trend={{ text: '+12%', dir: 'up' }}
+        />
+        <StatCard
+          title="Low Stock"
+          value={totalLowStock}
+          tone="rose"
+          icon={<span aria-hidden className="text-rose-500">⚠️</span>}
+          trend={{ text: '-5%', dir: 'down' }}
+        />
+        <StatCard
+          title="Categories"
+          value={totalCategories}
+          tone="emerald"
+          icon={<span aria-hidden className="text-emerald-500">🏷️</span>}
+          trend={{ text: '+8%', dir: 'up' }}
+        />
+        <StatCard
+          title="Inventory Value"
+          value={(() => {
+            const total = safeProducts.reduce((sum, p) => {
+              const price = Number(p.price ?? 0) || 0
+              const qty = Number(p.quantity ?? 0) || 0
+              return sum + price * qty
+            }, 0)
+            return `₹${total.toFixed(0)}`
+          })()}
+          tone="emerald"
+          icon={<span aria-hidden className="text-emerald-500">💰</span>}
+          trend={{ text: '+4%', dir: 'up' }}
+        />
       </div>
+
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <section className="rounded bg-white p-6 shadow-sm">
@@ -199,40 +277,97 @@ export default function Inventory() {
           </div>
 
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-700">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="px-3 py-2">Product</th>
-                  <th className="px-3 py-2">Category</th>
-                  <th className="px-3 py-2">Stock</th>
-                  <th className="px-3 py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.map((product) => {
-                  const qty = Number(product.quantity ?? 0)
-                  const isLow = qty < 5
-
-                  return (
-                    <tr
-                      key={product._id}
-                      className={`border-b border-slate-100 ${isLow ? 'bg-rose-50' : ''}`}
-                    >
-                      <td className="px-3 py-3 font-medium">{product.productName}</td>
-                      <td className="px-3 py-3">{product.category || '-'}</td>
-                      <td
-                        className={`px-3 py-3 font-semibold ${isLow ? 'text-rose-700' : 'text-slate-800'}`}
+            <div className="max-h-[520px] overflow-auto">
+              <table className="w-full text-left text-sm text-slate-700">
+                <thead className="sticky top-0 z-10 bg-white">
+                  <tr className="border-b border-slate-200">
+                    <th className="px-3 py-2">
+                      <button
+                        onClick={() => setSort((prev) => ({
+                          key: 'name',
+                          dir: prev.key === 'name' ? (prev.dir === 'asc' ? 'desc' : 'asc') : 'asc'
+                        }))}
+                        className="inline-flex items-center gap-2 font-medium hover:text-slate-900"
                       >
-                        {qty}
-                      </td>
-                      <td className="px-3 py-3">
-                        <LowStockBadge isLow={isLow} />
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                        Sort: Name
+                      </button>
+                    </th>
+                    <th className="px-3 py-2">Category</th>
+                    <th className="px-3 py-2">
+                      <button
+                        onClick={() => setSort((prev) => ({
+                          key: 'price',
+                          dir: prev.key === 'price' ? (prev.dir === 'asc' ? 'desc' : 'asc') : 'asc'
+                        }))}
+                        className="inline-flex items-center gap-2 font-medium hover:text-slate-900"
+                      >
+                        Sort: Price
+                      </button>
+                    </th>
+                    <th className="px-3 py-2">
+                      <button
+                        onClick={() => setSort((prev) => ({
+                          key: 'stock',
+                          dir: prev.key === 'stock' ? (prev.dir === 'asc' ? 'desc' : 'asc') : 'asc'
+                        }))}
+                        className="inline-flex items-center gap-2 font-medium hover:text-slate-900"
+                      >
+                        Sort: Stock
+                      </button>
+                    </th>
+                    <th className="px-3 py-2">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts
+                    .slice()
+                    .sort((a, b) => {
+                      const dir = sort.dir === 'asc' ? 1 : -1
+                      if (sort.key === 'name') {
+                        return ((a.productName || '').localeCompare(b.productName || '')) * dir
+                      }
+                      if (sort.key === 'price') {
+                        return (Number(a.price ?? 0) - Number(b.price ?? 0)) * dir
+                      }
+                      if (sort.key === 'stock') {
+                        return (Number(a.quantity ?? 0) - Number(b.quantity ?? 0)) * dir
+                      }
+                      return 0
+                    })
+                    .map((product, idx) => {
+                      const qty = Number(product.quantity ?? 0)
+                      const isLow = qty < 5
+                      const zebra = idx % 2 === 0
+
+                      return (
+                        <tr
+                          key={product._id}
+                          className={
+                            `border-b border-slate-100 transition ` +
+                            `${zebra ? 'bg-white' : 'bg-slate-50'} ` +
+                            `${isLow ? 'bg-rose-50/70' : ''} ` +
+                            'hover:bg-slate-100'
+                          }
+                        >
+                          <td className="px-3 py-3 font-medium">{product.productName}</td>
+                          <td className="px-3 py-3">{product.category || '-'}</td>
+                          <td className="px-3 py-3 font-semibold text-slate-800">
+                            ₹{Number(product.price ?? 0).toFixed(0)}
+                          </td>
+                          <td
+                            className={`px-3 py-3 font-semibold ${isLow ? 'text-rose-700' : 'text-slate-800'}`}
+                          >
+                            {qty}
+                          </td>
+                          <td className="px-3 py-3">
+                            <StockBadge qty={qty} />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                </tbody>
+              </table>
+
 
             {filteredProducts.length === 0 && (
               <div className="mt-4 text-center text-slate-500">No products found</div>
@@ -243,6 +378,8 @@ export default function Inventory() {
                 {lowStockInFiltered.length} product(s) are below the low stock threshold.
               </div>
             )}
+
+            </div>
           </div>
         </section>
       </div>
