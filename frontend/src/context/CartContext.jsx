@@ -15,23 +15,37 @@ export function CartProvider({ children }) {
             : item
         )
       }
-      return [...prevCart, { product: product._id, productName: product.productName, price: product.price, quantity: 1, stock: product.quantity }]
+
+      // POS UI uses `item.name`
+      return [...prevCart, {
+        product: product._id,
+        name: product.productName,
+        price: product.price,
+        quantity: 1,
+        stock: product.quantity
+      }]
     })
   }
 
   const updateQuantity = (productId, delta) => {
-    setCart((prevCart) =>
-      prevCart.map((item) => {
+    setCart((prevCart) => {
+      const nextCart = prevCart.map((item) => {
         if (item.product !== productId) return item
-        const nextQty = Math.max(1, Math.min(item.stock, item.quantity + delta))
+        const rawQty = item.quantity + delta
+        if (rawQty <= 0) return null
+        const nextQty = Math.min(item.stock, rawQty)
         return { ...item, quantity: nextQty }
       })
-    )
+
+      // remove items when qty hits 0
+      return nextCart.filter(Boolean)
+    })
   }
 
   const removeFromCart = (productId) => {
     setCart((prevCart) => prevCart.filter((item) => item.product !== productId))
   }
+
 
   const clearCart = () => setCart([])
 
