@@ -1,77 +1,183 @@
-import React, { useEffect, useState } from 'react'
-import axios from '../api/axios'
+import React, { useState } from 'react'
 
 export default function Inventory() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
+const [products] = useState([
+{
+id: 1,
+name: 'Wireless Mouse',
+category: 'Accessories',
+stock: 24,
+},
+{
+id: 2,
+name: 'Mechanical Keyboard',
+category: 'Accessories',
+stock: 12,
+},
+{
+id: 3,
+name: 'Gaming Headset',
+category: 'Audio',
+stock: 5,
+},
+{
+id: 4,
+name: 'USB-C Cable',
+category: 'Cables',
+stock: 48,
+},
+{
+id: 5,
+name: 'Laptop Stand',
+category: 'Office',
+stock: 8,
+},
+])
 
-  useEffect(() => {
-    const load = async () => {
-      const res = await axios.get('/products')
-      setProducts(res.data)
-      setLoading(false)
-    }
-    load()
-  }, [])
+const lowStock = products.filter((item) => item.stock <= 10)
 
-  const updateStock = async (id, delta) => {
-    const product = products.find((item) => item._id === id)
-    if (!product) return
-    const newQuantity = Math.max(0, product.quantity + delta)
-    await axios.put(`/products/${id}`, { ...product, quantity: newQuantity })
-    setProducts(products.map((item) => item._id === id ? { ...item, quantity: newQuantity } : item))
-  }
+return ( <div className="space-y-8"> <div> <p className="text-sm font-medium text-orange-500">
+Stock Management </p>
 
-  const lowStock = products.filter((item) => item.quantity <= 5)
 
-  if (loading) return <div className="p-6 text-center">Loading inventory...</div>
+    <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+      Inventory
+    </h1>
 
-  return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <section className="rounded bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">Low Stock Alerts</h2>
-        {lowStock.length === 0 ? (
-          <p className="mt-4 text-slate-600">All products are sufficiently stocked.</p>
-        ) : (
-          <ul className="mt-4 space-y-3">
-            {lowStock.map((product) => (
-              <li key={product._id} className="rounded border border-rose-200 bg-rose-50 p-3">
-                <div className="flex items-center justify-between gap-2 text-sm">
-                  <div>
-                    <div className="font-semibold">{product.productName}</div>
-                    <div className="text-slate-600">Stock: {product.quantity}</div>
-                  </div>
-                  <button onClick={() => updateStock(product._id, 10)} className="rounded bg-emerald-600 px-3 py-1 text-white">Restock +10</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+    <p className="mt-2 text-slate-500">
+      Monitor inventory levels and stock alerts.
+    </p>
+  </div>
 
-      <section className="rounded bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">Inventory Details</h2>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-700">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="px-3 py-2">Product</th>
-                <th className="px-3 py-2">Category</th>
-                <th className="px-3 py-2">Stock</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product._id} className="border-b border-slate-100">
-                  <td className="px-3 py-3">{product.productName}</td>
-                  <td className="px-3 py-3">{product.category || '-'}</td>
-                  <td className={`px-3 py-3 font-semibold ${product.quantity <= 5 ? 'text-rose-600' : 'text-slate-800'}`}>{product.quantity}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+  <div className="grid gap-6 md:grid-cols-3">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+      <p className="text-sm text-slate-500">
+        Total Products
+      </p>
+
+      <h2 className="mt-3 text-4xl font-bold text-slate-900">
+        {products.length}
+      </h2>
     </div>
-  )
+
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+      <p className="text-sm text-slate-500">
+        Low Stock Items
+      </p>
+
+      <h2 className="mt-3 text-4xl font-bold text-red-500">
+        {lowStock.length}
+      </h2>
+    </div>
+
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+      <p className="text-sm text-slate-500">
+        Inventory Health
+      </p>
+
+      <h2 className="mt-3 text-4xl font-bold text-green-500">
+        92%
+      </h2>
+    </div>
+  </div>
+
+  <div className="rounded-3xl border border-red-200 bg-red-50 p-6">
+    <h2 className="text-lg font-semibold text-red-600">
+      Low Stock Alerts
+    </h2>
+
+    <div className="mt-4 space-y-3">
+      {lowStock.map((product) => (
+        <div
+          key={product.id}
+          className="flex items-center justify-between rounded-2xl bg-white p-4"
+        >
+          <div>
+            <p className="font-semibold text-slate-900">
+              {product.name}
+            </p>
+
+            <p className="text-sm text-slate-500">
+              {product.category}
+            </p>
+          </div>
+
+          <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600">
+            {product.stock} Left
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="px-6 py-5 border-b border-slate-200">
+      <h2 className="text-xl font-bold text-slate-900">
+        Inventory Overview
+      </h2>
+    </div>
+
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="bg-slate-50 border-b border-slate-200">
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Product
+            </th>
+
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Category
+            </th>
+
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Stock
+            </th>
+
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Status
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {products.map((product) => (
+            <tr
+              key={product.id}
+              className="border-b border-slate-100 transition-all duration-300 hover:bg-orange-50"
+            >
+              <td className="px-6 py-5 font-semibold text-slate-900">
+                {product.name}
+              </td>
+
+              <td className="px-6 py-5 text-slate-600">
+                {product.category}
+              </td>
+
+              <td className="px-6 py-5 text-slate-900">
+                {product.stock}
+              </td>
+
+              <td className="px-6 py-5">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    product.stock <= 10
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-green-100 text-green-600'
+                  }`}
+                >
+                  {product.stock <= 10
+                    ? 'Low Stock'
+                    : 'In Stock'}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+)
 }

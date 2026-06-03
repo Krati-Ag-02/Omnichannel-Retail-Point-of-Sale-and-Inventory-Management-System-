@@ -1,101 +1,149 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import axios from '../api/axios'
-import { useCart } from '../context/CartContext'
+import React, { useState } from 'react'
 
 export default function POS() {
-  const [products, setProducts] = useState([])
-  const [query, setQuery] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState('')
-  const { cart, addToCart, updateQuantity, removeFromCart, clearCart, totalAmount } = useCart()
+const [cart, setCart] = useState([])
 
-  useEffect(() => {
-    const load = async () => {
-      const res = await axios.get('/products')
-      setProducts(res.data)
-      setLoading(false)
-    }
-    load()
-  }, [])
+const products = [
+{ id: 1, name: 'Wireless Mouse', price: 899 },
+{ id: 2, name: 'Mechanical Keyboard', price: 2999 },
+{ id: 3, name: 'Gaming Headset', price: 2499 },
+{ id: 4, name: 'USB-C Cable', price: 299 },
+{ id: 5, name: 'Laptop Stand', price: 1499 },
+{ id: 6, name: 'Webcam', price: 3499 },
+]
 
-  const handleAdd = (product) => {
-    addToCart(product)
-  }
+const addToCart = (product) => {
+setCart((prev) => [...prev, product])
+}
 
-  const handleQty = (id, delta) => {
-    updateQuantity(id, delta)
-  }
+const total = cart.reduce(
+(sum, item) => sum + item.price,
+0
+)
 
-  const checkout = async () => {
-    if (cart.length === 0) return
-    await axios.post('/orders', { products: cart, totalAmount: totalAmount, paymentMethod: 'cash' })
-    clearCart()
-    setMessage('Order completed successfully.')
-  }
+return ( <div className="space-y-8"> <div> <p className="text-sm font-medium text-orange-500">
+Point Of Sale </p>
 
-  const filteredProducts = products.filter((product) =>
-    product.productName.toLowerCase().includes(query.toLowerCase()) ||
-    product.category?.toLowerCase().includes(query.toLowerCase())
-  )
 
-  if (loading) return <div className="p-6 text-center">Loading POS products...</div>
+    <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+      POS Terminal
+    </h1>
 
-  return (
-    <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-      <section className="rounded bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">POS</h1>
-            <p className="text-sm text-slate-600">Add products to cart and checkout.</p>
+    <p className="mt-2 text-slate-500">
+      Create bills and manage customer orders.
+    </p>
+  </div>
+
+  <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-xl font-bold text-slate-900">
+        Products
+      </h2>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        {products.map((product) => (
+          <div
+            key={product.id}
+            className="
+            rounded-2xl
+            border
+            border-slate-200
+            p-5
+            transition-all
+            duration-300
+            hover:-translate-y-1
+            hover:border-orange-300
+            hover:shadow-lg
+            "
+          >
+            <h3 className="font-semibold text-slate-900">
+              {product.name}
+            </h3>
+
+            <p className="mt-2 text-slate-500">
+              ₹{product.price}
+            </p>
+
+            <button
+              onClick={() => addToCart(product)}
+              className="
+              mt-4
+              w-full
+              rounded-xl
+              bg-orange-500
+              px-4
+              py-2
+              font-medium
+              text-white
+              transition-all
+              duration-300
+              hover:bg-orange-600
+              "
+            >
+              Add To Cart
+            </button>
           </div>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products" className="rounded border px-4 py-3" />
-        </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {filteredProducts.map((product) => (
-            <div key={product._id} className="rounded border border-slate-200 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="font-semibold">{product.productName}</div>
-                  <div className="text-sm text-slate-500">₹{product.price.toFixed(2)}</div>
-                </div>
-                <button onClick={() => handleAdd(product)} className="rounded bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-700">Add</button>
-              </div>
-              <div className="mt-3 text-sm text-slate-500">Stock: {product.quantity}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">Cart</h2>
-        {message && <div className="my-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{message}</div>}
-        {cart.length === 0 ? (
-          <p className="mt-4 text-slate-600">Select products to build a bill.</p>
-        ) : (
-          <div className="mt-4 space-y-4">
-            {cart.map((item) => (
-              <div key={item.product} className="flex items-center justify-between gap-3 rounded border border-slate-200 p-3">
-                <div>
-                  <div className="font-semibold">{item.name}</div>
-                  <div className="text-sm text-slate-500">₹{item.price.toFixed(2)} x {item.quantity}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => handleQty(item.product, -1)} className="rounded border px-2 py-1">-</button>
-                  <button onClick={() => handleQty(item.product, 1)} className="rounded border px-2 py-1">+</button>
-                  <button onClick={() => removeFromCart(item.product)} className="rounded bg-rose-600 px-2 py-1 text-white">x</button>
-                </div>
-              </div>
-            ))}
-            <div className="rounded border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-center justify-between text-slate-600">
-                <span>Total</span>
-                <span className="text-xl font-semibold">₹{totalAmount.toFixed(2)}</span>
-              </div>
-            </div>
-            <button onClick={checkout} className="w-full rounded bg-emerald-600 px-4 py-3 text-white hover:bg-emerald-700">Checkout</button>
-          </div>
-        )}
-      </section>
+        ))}
+      </div>
     </div>
-  )
+
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-xl font-bold text-slate-900">
+        Cart
+      </h2>
+
+      <div className="mt-6 space-y-3">
+        {cart.length === 0 ? (
+          <p className="text-slate-500">
+            No items added yet.
+          </p>
+        ) : (
+          cart.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between rounded-xl bg-slate-50 p-3"
+            >
+              <span>{item.name}</span>
+
+              <span>₹{item.price}</span>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="mt-8 border-t border-slate-200 pt-6">
+        <div className="flex items-center justify-between">
+          <span className="font-medium text-slate-600">
+            Total
+          </span>
+
+          <span className="text-2xl font-bold text-slate-900">
+            ₹{total}
+          </span>
+        </div>
+
+        <button
+          className="
+          mt-6
+          w-full
+          rounded-2xl
+          bg-orange-500
+          py-3
+          font-semibold
+          text-white
+          transition-all
+          duration-300
+          hover:bg-orange-600
+          hover:shadow-lg
+          "
+        >
+          Checkout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+)
 }

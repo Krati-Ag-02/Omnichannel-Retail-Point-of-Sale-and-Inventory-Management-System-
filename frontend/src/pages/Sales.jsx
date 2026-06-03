@@ -1,78 +1,122 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import axios from '../api/axios'
+import React from 'react'
 
 export default function Sales() {
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
+const sales = [
+{
+id: '#ORD001',
+customer: 'Rahul Sharma',
+amount: 2499,
+date: '01 Jun 2026',
+},
+{
+id: '#ORD002',
+customer: 'Priya Singh',
+amount: 899,
+date: '01 Jun 2026',
+},
+{
+id: '#ORD003',
+customer: 'Aman Verma',
+amount: 3499,
+date: '31 May 2026',
+},
+{
+id: '#ORD004',
+customer: 'Sneha Gupta',
+amount: 1499,
+date: '31 May 2026',
+},
+]
 
-  useEffect(() => {
-    const load = async () => {
-      const res = await axios.get('/orders')
-      setOrders(res.data)
-      setLoading(false)
-    }
-    load()
-  }, [])
+return ( <div className="space-y-8"> <div> <p className="text-sm font-medium text-orange-500">
+Analytics </p>
 
-  const summary = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10)
-    const daily = orders.filter((order) => order.createdAt?.slice(0, 10) === today)
-    return {
-      totalOrders: orders.length,
-      totalRevenue: orders.reduce((sum, order) => sum + order.totalAmount, 0),
-      todayRevenue: daily.reduce((sum, order) => sum + order.totalAmount, 0),
-      todayCount: daily.length
-    }
-  }, [orders])
 
-  if (loading) return <div className="p-6 text-center">Loading sales history...</div>
+    <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+      Sales Overview
+    </h1>
 
-  return (
-    <div className="space-y-6">
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded bg-white p-6 shadow-sm">
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Total Orders</div>
-          <div className="mt-3 text-3xl font-bold text-slate-900">{summary.totalOrders}</div>
-        </div>
-        <div className="rounded bg-white p-6 shadow-sm">
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Total Revenue</div>
-          <div className="mt-3 text-3xl font-bold text-slate-900">₹{summary.totalRevenue.toFixed(2)}</div>
-        </div>
-        <div className="rounded bg-white p-6 shadow-sm">
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Today&apos;s Revenue</div>
-          <div className="mt-3 text-3xl font-bold text-slate-900">₹{summary.todayRevenue.toFixed(2)}</div>
-        </div>
-        <div className="rounded bg-white p-6 shadow-sm">
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Today&apos;s Orders</div>
-          <div className="mt-3 text-3xl font-bold text-slate-900">{summary.todayCount}</div>
-        </div>
-      </section>
+    <p className="mt-2 text-slate-500">
+      Monitor revenue and order performance.
+    </p>
+  </div>
 
-      <section className="rounded bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">Sales History</h1>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-700">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="px-3 py-3">Order</th>
-                <th className="px-3 py-3">Items</th>
-                <th className="px-3 py-3">Total</th>
-                <th className="px-3 py-3">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order._id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="px-3 py-3">{order._id.slice(-6)}</td>
-                  <td className="px-3 py-3">{order.products.length}</td>
-                  <td className="px-3 py-3">₹{order.totalAmount.toFixed(2)}</td>
-                  <td className="px-3 py-3">{new Date(order.createdAt).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+  <div className="grid gap-6 md:grid-cols-3">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <p className="text-sm text-slate-500">
+        Total Revenue
+      </p>
+
+      <h2 className="mt-3 text-4xl font-bold text-slate-900">
+        ₹1.28L
+      </h2>
     </div>
-  )
+
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <p className="text-sm text-slate-500">
+        Orders
+      </p>
+
+      <h2 className="mt-3 text-4xl font-bold text-slate-900">
+        1,847
+      </h2>
+    </div>
+
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <p className="text-sm text-slate-500">
+        Avg Order Value
+      </p>
+
+      <h2 className="mt-3 text-4xl font-bold text-slate-900">
+        ₹2,340
+      </h2>
+    </div>
+  </div>
+
+  <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="px-6 py-5 border-b border-slate-200">
+      <h2 className="text-xl font-bold text-slate-900">
+        Recent Sales
+      </h2>
+    </div>
+
+    <table className="w-full">
+      <thead>
+        <tr className="bg-slate-50 border-b border-slate-200">
+          <th className="px-6 py-4 text-left">Order ID</th>
+          <th className="px-6 py-4 text-left">Customer</th>
+          <th className="px-6 py-4 text-left">Amount</th>
+          <th className="px-6 py-4 text-left">Date</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {sales.map((sale) => (
+          <tr
+            key={sale.id}
+            className="border-b border-slate-100 hover:bg-orange-50 transition-all"
+          >
+            <td className="px-6 py-4 font-medium">
+              {sale.id}
+            </td>
+
+            <td className="px-6 py-4">
+              {sale.customer}
+            </td>
+
+            <td className="px-6 py-4">
+              ₹{sale.amount}
+            </td>
+
+            <td className="px-6 py-4">
+              {sale.date}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+)
 }

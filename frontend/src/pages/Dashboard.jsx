@@ -1,63 +1,205 @@
-import React, { useEffect, useState } from 'react'
-import axios from '../api/axios'
+import React from 'react'
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({ products: 0, sales: 0, revenue: 0, lowStock: 0 })
-  const [loading, setLoading] = useState(true)
+const stats = [
+{
+title: 'Total Products',
+value: '248',
+change: '+12%',
+icon: '📦',
+},
+{
+title: 'Orders',
+value: '1,847',
+change: '+8%',
+icon: '🛒',
+},
+{
+title: 'Revenue',
+value: '₹1.28L',
+change: '+18%',
+icon: '💰',
+},
+{
+title: 'Low Stock',
+value: '12',
+change: '-3%',
+icon: '⚠️',
+},
+]
 
-  useEffect(() => {
-    const load = async () => {
-      const [productRes, orderRes] = await Promise.all([axios.get('/products'), axios.get('/orders')])
-      const products = productRes.data
-      const orders = orderRes.data
-      const revenue = orders.reduce((sum, order) => sum + order.totalAmount, 0)
-      const lowStock = products.filter((product) => product.quantity <= 5).length
-      setStats({ products: products.length, sales: orders.length, revenue, lowStock })
-      setLoading(false)
-    }
-    load()
-  }, [])
+return ( <div className="space-y-8 bg-slate-50 min-h-screen">
+{/* Header */}
 
-  if (loading) return <div className="p-6 text-center">Loading dashboard...</div>
+```
+  <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p className="text-sm font-medium text-orange-500">
+        Dashboard
+      </p>
 
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded bg-white p-6 shadow-sm">
-          <div className="text-sm uppercase tracking-[0.3em] text-slate-500">Total Products</div>
-          <div className="mt-4 text-3xl font-bold text-slate-900">{stats.products}</div>
-        </div>
-        <div className="rounded bg-white p-6 shadow-sm">
-          <div className="text-sm uppercase tracking-[0.3em] text-slate-500">Total Sales</div>
-          <div className="mt-4 text-3xl font-bold text-slate-900">{stats.sales}</div>
-        </div>
-        <div className="rounded bg-white p-6 shadow-sm">
-          <div className="text-sm uppercase tracking-[0.3em] text-slate-500">Revenue</div>
-          <div className="mt-4 text-3xl font-bold text-slate-900">₹{stats.revenue.toFixed(2)}</div>
-        </div>
-        <div className="rounded bg-white p-6 shadow-sm">
-          <div className="text-sm uppercase tracking-[0.3em] text-slate-500">Low Stock</div>
-          <div className="mt-4 text-3xl font-bold text-rose-600">{stats.lowStock}</div>
+      <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+        Welcome back 👋
+      </h1>
+
+      <p className="mt-2 text-slate-500">
+        Here's what's happening in your store today.
+      </p>
+    </div>
+
+    <button
+      className="
+      rounded-2xl
+      bg-orange-500
+      px-5
+      py-3
+      font-medium
+      text-white
+      transition-all
+      duration-300
+      hover:-translate-y-1
+      hover:bg-orange-600
+      hover:shadow-lg
+      "
+    >
+      Generate Report
+    </button>
+  </section>
+
+  {/* KPI Cards */}
+
+  <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+    {stats.map((item) => (
+      <div
+        key={item.title}
+        className="
+        rounded-3xl
+        border
+        border-slate-200
+        bg-white
+        p-6
+        shadow-sm
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:shadow-xl
+        "
+      >
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm text-slate-500">
+              {item.title}
+            </p>
+
+            <h2 className="mt-3 text-4xl font-bold text-slate-900">
+              {item.value}
+            </h2>
+
+            <span className="mt-3 inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600">
+              {item.change}
+            </span>
+          </div>
+
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-2xl">
+            {item.icon}
+          </div>
         </div>
       </div>
+    ))}
+  </section>
 
-      <section className="rounded bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">Quick Actions</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <div className="rounded border border-slate-200 p-4">
-            <div className="text-sm text-slate-500">Use POS</div>
-            <div className="mt-2 text-lg font-semibold">Create bills instantly</div>
+  {/* Main Layout */}
+
+  <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+    {/* Activity */}
+
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-slate-900">
+          Recent Activity
+        </h2>
+
+        <button className="text-sm text-orange-500 hover:text-orange-600">
+          View all
+        </button>
+      </div>
+
+      <div className="mt-6 space-y-4">
+        {[
+          'New order received',
+          'Inventory updated',
+          'Product added',
+          'Sales report generated',
+        ].map((item, index) => (
+          <div
+            key={index}
+            className="
+            flex
+            items-center
+            justify-between
+            rounded-2xl
+            bg-slate-50
+            p-4
+            transition-all
+            duration-300
+            hover:bg-orange-50
+            "
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-3 w-3 rounded-full bg-orange-400" />
+              <span className="font-medium text-slate-700">
+                {item}
+              </span>
+            </div>
+
+            <span className="text-sm text-slate-400">
+              2h ago
+            </span>
           </div>
-          <div className="rounded border border-slate-200 p-4">
-            <div className="text-sm text-slate-500">Manage Inventory</div>
-            <div className="mt-2 text-lg font-semibold">Track stock and alerts</div>
-          </div>
-          <div className="rounded border border-slate-200 p-4">
-            <div className="text-sm text-slate-500">Sales History</div>
-            <div className="mt-2 text-lg font-semibold">Review order records</div>
-          </div>
-        </div>
-      </section>
+        ))}
+      </div>
     </div>
-  )
+
+    {/* Quick Actions */}
+
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-xl font-bold text-slate-900">
+        Quick Actions
+      </h2>
+
+      <div className="mt-6 space-y-4">
+        {[
+          'Create New Order',
+          'Add Product',
+          'Manage Inventory',
+          'View Sales',
+        ].map((action, index) => (
+          <button
+            key={index}
+            className="
+            w-full
+            rounded-2xl
+            border
+            border-slate-200
+            bg-white
+            p-4
+            text-left
+            font-medium
+            text-slate-700
+            transition-all
+            duration-300
+            hover:border-orange-300
+            hover:bg-orange-50
+            "
+          >
+            {action}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+</div>
+
+
+)
 }
