@@ -2,6 +2,8 @@ import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { FiBell, FiSearch } from 'react-icons/fi'
+import NetworkStatus from './NetworkStatus'
+
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext)
@@ -21,6 +23,11 @@ export default function Navbar() {
           <button className="rounded-2xl bg-slate-900/80 p-2 text-slate-200 transition hover:bg-slate-800">
             <FiBell className="h-5 w-5" />
           </button>
+
+          <div className="block">
+            <NetworkStatus />
+          </div>
+
           {user ? (
             <div className="flex items-center gap-3 rounded-2xl bg-slate-900/80 px-4 py-2 text-sm text-slate-200">
               <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500 text-sm font-semibold text-white">{user.name?.slice(0, 1).toUpperCase()}</div>
