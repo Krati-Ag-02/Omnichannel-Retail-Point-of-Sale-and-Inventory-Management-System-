@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -35,11 +36,12 @@ app.get('/', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/users', userRoutes);
 
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/products', require('./routes/productRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes'));
-app.use("/api/analytics", analyticsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // ==================== ERROR HANDLING ====================
 // 404 handler

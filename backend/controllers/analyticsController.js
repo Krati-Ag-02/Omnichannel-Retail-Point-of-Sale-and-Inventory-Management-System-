@@ -1,7 +1,7 @@
-const Product = require("../models/Product");
-const Order = require("../models/Order");
+import Product from "../models/Product.js";
+import Order from "../models/Order.js";
 
-exports.getSalesSummary = async (req, res) => {
+export const getSalesSummary = async (req, res) => {
   try {
     const totalProducts = await Product.countDocuments();
     const totalOrders = await Order.countDocuments();
@@ -32,10 +32,10 @@ exports.getSalesSummary = async (req, res) => {
   }
 };
 
-exports.getLowStockProducts = async (req, res) => {
+export const getLowStockProducts = async (req, res) => {
   try {
     const products = await Product.find({
-      quantity: { $lte: 5 }
+      stock: { $lte: 5 }
     });
 
     res.json(products);
@@ -46,7 +46,7 @@ exports.getLowStockProducts = async (req, res) => {
   }
 };
 
-exports.getTopProducts = async (req, res) => {
+export const getTopProducts = async (req, res) => {
   try {
     const topProducts = await Order.aggregate([
       {
@@ -79,6 +79,29 @@ exports.getTopProducts = async (req, res) => {
     ]);
 
     res.json(topProducts);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+export const getInventoryForecast = async (req, res) => {
+  try {
+    const products = await Product.find();
+
+    const forecast = products.map((product) => ({
+      productName: product.name,
+      currentStock: product.stock,
+      reorderLevel: product.reorderLevel,
+      reorderQuantity: product.reorderQuantity,
+      stockStatus:
+        product.stock <= product.reorderLevel
+          ? "Reorder Now"
+          : "Stock Healthy"
+    }));
+
+    res.json(forecast);
   } catch (error) {
     res.status(500).json({
       message: error.message

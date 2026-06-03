@@ -1,59 +1,87 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import axios from '../api/axios'
+import React, { useState } from 'react'
 
 export default function EditProduct() {
-  const { id } = useParams()
-  const [form, setForm] = useState({ productName: '', category: '', price: '', quantity: '', barcode: '', description: '' })
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
+const [form, setForm] = useState({
+productName: 'Wireless Mouse',
+category: 'Accessories',
+price: '899',
+quantity: '24',
+description: 'Premium wireless mouse',
+})
 
-  useEffect(() => {
-    const load = async () => {
-      const res = await axios.get(`/products/${id}`)
-      setForm({
-        productName: res.data.productName || '',
-        category: res.data.category || '',
-        price: res.data.price || '',
-        quantity: res.data.quantity || '',
-        barcode: res.data.barcode || '',
-        description: res.data.description || ''
-      })
-      setLoading(false)
-    }
-    load()
-  }, [id])
+const handleChange = (e) => {
+setForm({
+...form,
+[e.target.name]: e.target.value,
+})
+}
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+return ( <div className="space-y-8"> <div> <p className="text-sm font-medium text-orange-500">
+Product Management </p>
 
-  const submit = async (e) => {
-    e.preventDefault()
-    await axios.put(`/products/${id}`, {
-      ...form,
-      price: Number(form.price),
-      quantity: Number(form.quantity)
-    })
-    navigate('/products')
-  }
+    <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+      Edit Product
+    </h1>
+  </div>
 
-  if (loading) return <div className="p-6 text-center">Loading product...</div>
+  <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <form className="grid gap-6 md:grid-cols-2">
+      <input
+        name="productName"
+        value={form.productName}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4"
+      />
 
-  return (
-    <div className="space-y-4">
-      <div className="rounded bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">Edit Product</h1>
-        <form onSubmit={submit} className="mt-5 grid gap-4 md:grid-cols-2">
-          <input name="productName" value={form.productName} onChange={handleChange} required placeholder="Product name" className="rounded border p-3" />
-          <input name="category" value={form.category} onChange={handleChange} placeholder="Category" className="rounded border p-3" />
-          <input name="price" value={form.price} onChange={handleChange} type="number" min="0" step="0.01" required placeholder="Price" className="rounded border p-3" />
-          <input name="quantity" value={form.quantity} onChange={handleChange} type="number" min="0" required placeholder="Stock quantity" className="rounded border p-3" />
-          <input name="barcode" value={form.barcode} onChange={handleChange} placeholder="Barcode" className="rounded border p-3 md:col-span-2" />
-          <textarea name="description" value={form.description} onChange={handleChange} rows="4" placeholder="Description" className="rounded border p-3 md:col-span-2" />
-          <button type="submit" className="w-full rounded bg-emerald-600 px-4 py-3 text-white hover:bg-emerald-700 md:col-span-2">
-            Save Changes
-          </button>
-        </form>
-      </div>
-    </div>
-  )
+      <input
+        name="category"
+        value={form.category}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4"
+      />
+
+      <input
+        name="price"
+        value={form.price}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4"
+      />
+
+      <input
+        name="quantity"
+        value={form.quantity}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4"
+      />
+
+      <textarea
+        rows="5"
+        name="description"
+        value={form.description}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4 md:col-span-2"
+      />
+
+      <button
+        className="
+        md:col-span-2
+        rounded-2xl
+        bg-orange-500
+        py-4
+        font-semibold
+        text-white
+        transition-all
+        duration-300
+        hover:bg-orange-600
+        hover:shadow-lg
+        "
+      >
+        Update Product
+      </button>
+    </form>
+  </div>
+</div>
+
+
+)
 }

@@ -1,42 +1,90 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import axios from '../api/axios'
 
 export default function AddProduct() {
-  const [form, setForm] = useState({ productName: '', category: '', price: '', quantity: '', barcode: '', description: '' })
-  const [saving, setSaving] = useState(false)
-  const navigate = useNavigate()
+const [form, setForm] = useState({
+productName: '',
+category: '',
+price: '',
+quantity: '',
+description: '',
+})
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+const handleChange = (e) => {
+setForm({
+...form,
+[e.target.name]: e.target.value,
+})
+}
 
-  const submit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    await axios.post('/products', {
-      ...form,
-      price: Number(form.price),
-      quantity: Number(form.quantity)
-    })
-    setSaving(false)
-    navigate('/products')
-  }
+return ( <div className="space-y-8"> <div> <p className="text-sm font-medium text-orange-500">
+Product Management </p>
 
-  return (
-    <div className="space-y-4">
-      <div className="rounded bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">Add Product</h1>
-        <form onSubmit={submit} className="mt-5 grid gap-4 md:grid-cols-2">
-          <input name="productName" value={form.productName} onChange={handleChange} required placeholder="Product name" className="rounded border p-3" />
-          <input name="category" value={form.category} onChange={handleChange} placeholder="Category" className="rounded border p-3" />
-          <input name="price" value={form.price} onChange={handleChange} type="number" min="0" step="0.01" required placeholder="Price" className="rounded border p-3" />
-          <input name="quantity" value={form.quantity} onChange={handleChange} type="number" min="0" required placeholder="Stock quantity" className="rounded border p-3" />
-          <input name="barcode" value={form.barcode} onChange={handleChange} placeholder="Barcode" className="rounded border p-3 md:col-span-2" />
-          <textarea name="description" value={form.description} onChange={handleChange} rows="4" placeholder="Description" className="rounded border p-3 md:col-span-2" />
-          <button type="submit" disabled={saving} className="w-full rounded bg-emerald-600 px-4 py-3 text-white hover:bg-emerald-700 md:col-span-2">
-            {saving ? 'Saving...' : 'Save Product'}
-          </button>
-        </form>
-      </div>
-    </div>
-  )
+
+    <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+      Add Product
+    </h1>
+  </div>
+
+  <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <form className="grid gap-6 md:grid-cols-2">
+      <input
+        name="productName"
+        placeholder="Product Name"
+        value={form.productName}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4"
+      />
+
+      <input
+        name="category"
+        placeholder="Category"
+        value={form.category}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4"
+      />
+
+      <input
+        name="price"
+        placeholder="Price"
+        value={form.price}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4"
+      />
+
+      <input
+        name="quantity"
+        placeholder="Quantity"
+        value={form.quantity}
+        onChange={handleChange}
+        className="rounded-2xl border border-slate-200 p-4"
+      />
+
+      <textarea
+        name="description"
+        placeholder="Description"
+        value={form.description}
+        onChange={handleChange}
+        rows="5"
+        className="rounded-2xl border border-slate-200 p-4 md:col-span-2"
+      />
+
+      <button
+        className="
+        md:col-span-2
+        rounded-2xl
+        bg-orange-500
+        py-4
+        font-semibold
+        text-white
+        transition-all
+        hover:bg-orange-600
+        "
+      >
+        Save Product
+      </button>
+    </form>
+  </div>
+</div>
+
+)
 }
