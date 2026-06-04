@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-import React, { useState } from 'react'
-=======
 import React, { useEffect, useMemo, useState } from 'react'
 import axios from '../api/axios'
->>>>>>> 7cb91e5b12c21805bdde6bd111d24443b84661d9
 
 const CATEGORY_OPTIONS = ['All', 'Electronics', 'Grocery', 'Accessories', 'Clothing']
 
@@ -83,65 +79,6 @@ function StockBadge({ qty }) {
 
 
 export default function Inventory() {
-<<<<<<< HEAD
-const [products] = useState([
-{
-id: 1,
-name: 'Wireless Mouse',
-category: 'Accessories',
-stock: 24,
-},
-{
-id: 2,
-name: 'Mechanical Keyboard',
-category: 'Accessories',
-stock: 12,
-},
-{
-id: 3,
-name: 'Gaming Headset',
-category: 'Audio',
-stock: 5,
-},
-{
-id: 4,
-name: 'USB-C Cable',
-category: 'Cables',
-stock: 48,
-},
-{
-id: 5,
-name: 'Laptop Stand',
-category: 'Office',
-stock: 8,
-},
-])
-
-const lowStock = products.filter((item) => item.stock <= 10)
-
-return ( <div className="space-y-8"> <div> <p className="text-sm font-medium text-orange-500">
-Stock Management </p>
-
-
-    <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
-      Inventory
-    </h1>
-
-    <p className="mt-2 text-slate-500">
-      Monitor inventory levels and stock alerts.
-    </p>
-  </div>
-
-  <div className="grid gap-6 md:grid-cols-3">
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <p className="text-sm text-slate-500">
-        Total Products
-      </p>
-
-      <h2 className="mt-3 text-4xl font-bold text-slate-900">
-        {products.length}
-      </h2>
-=======
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -242,333 +179,261 @@ Stock Management </p>
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-4">
-        <StatCard
-          title="Total Products"
-          value={totalProducts}
-          tone="slate"
-          icon={<span aria-hidden className="text-slate-500">📦</span>}
-          trend={{ text: '+12%', dir: 'up' }}
-        />
-        <StatCard
-          title="Low Stock"
-          value={totalLowStock}
-          tone="rose"
-          icon={<span aria-hidden className="text-rose-500">⚠️</span>}
-          trend={{ text: '-5%', dir: 'down' }}
-        />
-        <StatCard
-          title="Categories"
-          value={totalCategories}
-          tone="emerald"
-          icon={<span aria-hidden className="text-emerald-500">🏷️</span>}
-          trend={{ text: '+8%', dir: 'up' }}
-        />
-        <StatCard
-          title="Inventory Value"
-          value={(() => {
-            const total = safeProducts.reduce((sum, p) => {
-              const price = Number(p.price ?? 0) || 0
-              const qty = Number(p.quantity ?? 0) || 0
-              return sum + price * qty
-            }, 0)
-            return `₹${total.toFixed(0)}`
-          })()}
-          tone="emerald"
-          icon={<span aria-hidden className="text-emerald-500">💰</span>}
-          trend={{ text: '+4%', dir: 'up' }}
-        />
-      </div>
+  <div className="space-y-6">
+    <div className="grid gap-4 sm:grid-cols-4">
+      <StatCard
+        title="Total Products"
+        value={totalProducts}
+        tone="slate"
+        icon={<span aria-hidden className="text-slate-500">📦</span>}
+        trend={{ text: '+12%', dir: 'up' }}
+      />
 
+      <StatCard
+        title="Low Stock"
+        value={totalLowStock}
+        tone="rose"
+        icon={<span aria-hidden className="text-rose-500">⚠️</span>}
+        trend={{ text: '-5%', dir: 'down' }}
+      />
 
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <section className="rounded bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold">Low Stock Alerts</h2>
-          {lowStock.length === 0 ? (
-            <p className="mt-4 text-slate-600">All products are sufficiently stocked.</p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {lowStock.map((product) => (
-                <li key={product._id} className="rounded border border-rose-200 bg-rose-50 p-3">
-                  <div className="flex items-center justify-between gap-2 text-sm">
-                    <div>
-                      <div className="font-semibold">{product.productName}</div>
-                      <div className="text-slate-600">Stock: {product.quantity}</div>
+      <StatCard
+        title="Categories"
+        value={totalCategories}
+        tone="emerald"
+        icon={<span aria-hidden className="text-emerald-500">🏷️</span>}
+        trend={{ text: '+8%', dir: 'up' }}
+      />
+
+      <StatCard
+        title="Inventory Value"
+        value={`₹${safeProducts
+          .reduce((sum, p) => sum + Number(p.price ?? 0) * Number(p.quantity ?? 0), 0)
+          .toFixed(0)}`}
+        tone="emerald"
+        icon={<span aria-hidden className="text-emerald-500">💰</span>}
+        trend={{ text: '+4%', dir: 'up' }}
+      />
+    </div>
+
+    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+      <section className="rounded bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold">Low Stock Alerts</h2>
+
+        {lowStock.length === 0 ? (
+          <p className="mt-4 text-slate-600">
+            All products are sufficiently stocked.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {lowStock.map((product) => (
+              <li
+                key={product._id}
+                className="rounded border border-rose-200 bg-rose-50 p-3"
+              >
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <div>
+                    <div className="font-semibold">
+                      {product.productName}
                     </div>
-                    <button
-                      onClick={() => updateStock(product._id, 10)}
-                      className="rounded bg-emerald-600 px-3 py-1 text-white hover:bg-emerald-700"
-                    >
-                      Restock +10
-                    </button>
+                    <div className="text-slate-600">
+                      Stock: {product.quantity}
+                    </div>
                   </div>
-                </li>
+
+                  <button
+                    onClick={() => updateStock(product._id, 10)}
+                    className="rounded bg-emerald-600 px-3 py-1 text-white hover:bg-emerald-700"
+                  >
+                    Restock +10
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="rounded bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <h2 className="text-xl font-semibold">Inventory Details</h2>
+
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="w-full rounded border px-4 py-3 sm:w-[260px]"
+            />
+
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full rounded border px-4 py-3 sm:w-[240px]"
+            >
+              {CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
               ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="rounded bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-xl font-semibold">Inventory Details</h2>
-            </div>
-
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search products..."
-                className="w-full rounded border px-4 py-3 sm:w-[260px]"
-              />
-
-              <div className="w-full sm:w-[240px]">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full rounded border px-4 py-3"
-                >
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            </select>
           </div>
+        </div>
 
-          <div className="mt-4 overflow-x-auto">
-            <div className="max-h-[520px] overflow-auto">
-              <table className="w-full text-left text-sm text-slate-700">
-                <thead className="sticky top-0 z-10 bg-white">
-                  <tr className="border-b border-slate-200">
-                    <th className="px-3 py-2">
-                      <button
-                        onClick={() => setSort((prev) => ({
+        <div className="mt-4 overflow-x-auto">
+          <div className="max-h-[520px] overflow-auto">
+            <table className="w-full text-left text-sm text-slate-700">
+              <thead className="sticky top-0 z-10 bg-white">
+                <tr className="border-b border-slate-200">
+                  <th className="px-3 py-2">
+                    <button
+                      onClick={() =>
+                        setSort((prev) => ({
                           key: 'name',
-                          dir: prev.key === 'name' ? (prev.dir === 'asc' ? 'desc' : 'asc') : 'asc'
-                        }))}
-                        className="inline-flex items-center gap-2 font-medium hover:text-slate-900"
-                      >
-                        Sort: Name
-                      </button>
-                    </th>
-                    <th className="px-3 py-2">Category</th>
-                    <th className="px-3 py-2">
-                      <button
-                        onClick={() => setSort((prev) => ({
+                          dir:
+                            prev.key === 'name'
+                              ? prev.dir === 'asc'
+                                ? 'desc'
+                                : 'asc'
+                              : 'asc'
+                        }))
+                      }
+                    >
+                      Sort: Name
+                    </button>
+                  </th>
+
+                  <th className="px-3 py-2">Category</th>
+
+                  <th className="px-3 py-2">
+                    <button
+                      onClick={() =>
+                        setSort((prev) => ({
                           key: 'price',
-                          dir: prev.key === 'price' ? (prev.dir === 'asc' ? 'desc' : 'asc') : 'asc'
-                        }))}
-                        className="inline-flex items-center gap-2 font-medium hover:text-slate-900"
-                      >
-                        Sort: Price
-                      </button>
-                    </th>
-                    <th className="px-3 py-2">
-                      <button
-                        onClick={() => setSort((prev) => ({
+                          dir:
+                            prev.key === 'price'
+                              ? prev.dir === 'asc'
+                                ? 'desc'
+                                : 'asc'
+                              : 'asc'
+                        }))
+                      }
+                    >
+                      Sort: Price
+                    </button>
+                  </th>
+
+                  <th className="px-3 py-2">
+                    <button
+                      onClick={() =>
+                        setSort((prev) => ({
                           key: 'stock',
-                          dir: prev.key === 'stock' ? (prev.dir === 'asc' ? 'desc' : 'asc') : 'asc'
-                        }))}
-                        className="inline-flex items-center gap-2 font-medium hover:text-slate-900"
-                      >
-                        Sort: Stock
-                      </button>
-                    </th>
-                    <th className="px-3 py-2">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts
-                    .slice()
-                    .sort((a, b) => {
-                      const dir = sort.dir === 'asc' ? 1 : -1
-                      if (sort.key === 'name') {
-                        return ((a.productName || '').localeCompare(b.productName || '')) * dir
+                          dir:
+                            prev.key === 'stock'
+                              ? prev.dir === 'asc'
+                                ? 'desc'
+                                : 'asc'
+                              : 'asc'
+                        }))
                       }
-                      if (sort.key === 'price') {
-                        return (Number(a.price ?? 0) - Number(b.price ?? 0)) * dir
-                      }
-                      if (sort.key === 'stock') {
-                        return (Number(a.quantity ?? 0) - Number(b.quantity ?? 0)) * dir
-                      }
-                      return 0
-                    })
-                    .map((product, idx) => {
-                      const qty = Number(product.quantity ?? 0)
-                      const isLow = qty < 5
-                      const zebra = idx % 2 === 0
+                    >
+                      Sort: Stock
+                    </button>
+                  </th>
 
+                  <th className="px-3 py-2">Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredProducts
+                  .slice()
+                  .sort((a, b) => {
+                    const dir = sort.dir === 'asc' ? 1 : -1
+
+                    if (sort.key === 'name') {
                       return (
-                        <tr
-                          key={product._id}
-                          className={
-                            `border-b border-slate-100 transition ` +
-                            `${zebra ? 'bg-white' : 'bg-slate-50'} ` +
-                            `${isLow ? 'bg-rose-50/70' : ''} ` +
-                            'hover:bg-slate-100'
-                          }
-                        >
-                          <td className="px-3 py-3 font-medium">{product.productName}</td>
-                          <td className="px-3 py-3">{product.category || '-'}</td>
-                          <td className="px-3 py-3 font-semibold text-slate-800">
-                            ₹{Number(product.price ?? 0).toFixed(0)}
-                          </td>
-                          <td
-                            className={`px-3 py-3 font-semibold ${isLow ? 'text-rose-700' : 'text-slate-800'}`}
-                          >
-                            {qty}
-                          </td>
-                          <td className="px-3 py-3">
-                            <StockBadge qty={qty} />
-                          </td>
-                        </tr>
+                        (a.productName || '').localeCompare(
+                          b.productName || ''
+                        ) * dir
                       )
-                    })}
-                </tbody>
-              </table>
+                    }
 
+                    if (sort.key === 'price') {
+                      return (
+                        (Number(a.price ?? 0) -
+                          Number(b.price ?? 0)) * dir
+                      )
+                    }
+
+                    if (sort.key === 'stock') {
+                      return (
+                        (Number(a.quantity ?? 0) -
+                          Number(b.quantity ?? 0)) * dir
+                      )
+                    }
+
+                    return 0
+                  })
+                  .map((product, idx) => {
+                    const qty = Number(product.quantity ?? 0)
+                    const isLow = qty < 5
+
+                    return (
+                      <tr
+                        key={product._id}
+                        className={`border-b border-slate-100 ${
+                          idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'
+                        } ${isLow ? 'bg-rose-50/70' : ''} hover:bg-slate-100`}
+                      >
+                        <td className="px-3 py-3 font-medium">
+                          {product.productName}
+                        </td>
+
+                        <td className="px-3 py-3">
+                          {product.category || '-'}
+                        </td>
+
+                        <td className="px-3 py-3 font-semibold">
+                          ₹{Number(product.price ?? 0).toFixed(0)}
+                        </td>
+
+                        <td
+                          className={`px-3 py-3 font-semibold ${
+                            isLow
+                              ? 'text-rose-700'
+                              : 'text-slate-800'
+                          }`}
+                        >
+                          {qty}
+                        </td>
+
+                        <td className="px-3 py-3">
+                          <StockBadge qty={qty} />
+                        </td>
+                      </tr>
+                    )
+                  })}
+              </tbody>
+            </table>
 
             {filteredProducts.length === 0 && (
-              <div className="mt-4 text-center text-slate-500">No products found</div>
-            )}
-
-            {filteredProducts.length > 0 && lowStockInFiltered.length > 0 && (
-              <div className="mt-3 text-xs text-rose-700">
-                {lowStockInFiltered.length} product(s) are below the low stock threshold.
+              <div className="mt-4 text-center text-slate-500">
+                No products found
               </div>
             )}
 
-            </div>
+            {filteredProducts.length > 0 &&
+              lowStockInFiltered.length > 0 && (
+                <div className="mt-3 text-xs text-rose-700">
+                  {lowStockInFiltered.length} product(s) are below
+                  the low stock threshold.
+                </div>
+              )}
           </div>
-        </section>
-      </div>
->>>>>>> 7cb91e5b12c21805bdde6bd111d24443b84661d9
-    </div>
-
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <p className="text-sm text-slate-500">
-        Low Stock Items
-      </p>
-
-      <h2 className="mt-3 text-4xl font-bold text-red-500">
-        {lowStock.length}
-      </h2>
-    </div>
-
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <p className="text-sm text-slate-500">
-        Inventory Health
-      </p>
-
-      <h2 className="mt-3 text-4xl font-bold text-green-500">
-        92%
-      </h2>
-    </div>
-  </div>
-
-  <div className="rounded-3xl border border-red-200 bg-red-50 p-6">
-    <h2 className="text-lg font-semibold text-red-600">
-      Low Stock Alerts
-    </h2>
-
-    <div className="mt-4 space-y-3">
-      {lowStock.map((product) => (
-        <div
-          key={product.id}
-          className="flex items-center justify-between rounded-2xl bg-white p-4"
-        >
-          <div>
-            <p className="font-semibold text-slate-900">
-              {product.name}
-            </p>
-
-            <p className="text-sm text-slate-500">
-              {product.category}
-            </p>
-          </div>
-
-          <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600">
-            {product.stock} Left
-          </span>
         </div>
-      ))}
+      </section>
     </div>
   </div>
-
-  <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-    <div className="px-6 py-5 border-b border-slate-200">
-      <h2 className="text-xl font-bold text-slate-900">
-        Inventory Overview
-      </h2>
-    </div>
-
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="bg-slate-50 border-b border-slate-200">
-            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
-              Product
-            </th>
-
-            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
-              Category
-            </th>
-
-            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
-              Stock
-            </th>
-
-            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
-              Status
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {products.map((product) => (
-            <tr
-              key={product.id}
-              className="border-b border-slate-100 transition-all duration-300 hover:bg-orange-50"
-            >
-              <td className="px-6 py-5 font-semibold text-slate-900">
-                {product.name}
-              </td>
-
-              <td className="px-6 py-5 text-slate-600">
-                {product.category}
-              </td>
-
-              <td className="px-6 py-5 text-slate-900">
-                {product.stock}
-              </td>
-
-              <td className="px-6 py-5">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    product.stock <= 10
-                      ? 'bg-red-100 text-red-600'
-                      : 'bg-green-100 text-green-600'
-                  }`}
-                >
-                  {product.stock <= 10
-                    ? 'Low Stock'
-                    : 'In Stock'}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-
 )
 }
-
-
