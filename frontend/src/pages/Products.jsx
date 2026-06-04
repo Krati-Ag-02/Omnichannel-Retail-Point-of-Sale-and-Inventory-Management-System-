@@ -1,0 +1,400 @@
+<<<<<<< HEAD
+import React, { useState } from 'react'
+=======
+import React, { useEffect, useMemo, useState } from 'react'
+>>>>>>> 7cb91e5b12c21805bdde6bd111d24443b84661d9
+import { Link } from 'react-router-dom'
+
+export default function Products() {
+<<<<<<< HEAD
+const [search, setSearch] = useState('')
+
+const products = [
+{
+id: 1,
+productName: 'Wireless Mouse',
+category: 'Accessories',
+price: 899,
+quantity: 24,
+},
+{
+id: 2,
+productName: 'Mechanical Keyboard',
+category: 'Accessories',
+price: 2999,
+quantity: 12,
+},
+{
+id: 3,
+productName: 'Gaming Headset',
+category: 'Audio',
+price: 2499,
+quantity: 5,
+},
+{
+id: 4,
+productName: 'USB-C Cable',
+category: 'Cables',
+price: 299,
+quantity: 48,
+},
+{
+id: 5,
+productName: 'Laptop Stand',
+category: 'Office',
+price: 1499,
+quantity: 8,
+},
+]
+=======
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('all')
+
+  const [page, setPage] = useState(1)
+  const pageSize = 10
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await axios.get('/products')
+        setProducts(Array.isArray(res.data) ? res.data : [])
+      } catch (e) {
+        setProducts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+>>>>>>> 7cb91e5b12c21805bdde6bd111d24443b84661d9
+
+const filteredProducts = products.filter(
+(product) =>
+product.productName.toLowerCase().includes(search.toLowerCase()) ||
+product.category.toLowerCase().includes(search.toLowerCase())
+)
+
+<<<<<<< HEAD
+return ( <div className="space-y-8"> <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"> <div> <p className="text-sm font-medium text-orange-500">
+Inventory Management </p>
+
+      <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+        Products
+      </h1>
+
+      <p className="mt-2 text-slate-500">
+        Manage inventory, pricing and stock levels.
+      </p>
+=======
+  const categories = useMemo(() => {
+    const set = new Set(products.map((p) => (p.category || 'General').trim()))
+    return Array.from(set).sort((a, b) => a.localeCompare(b))
+  }, [products])
+
+  const filtered = useMemo(() => {
+    const s = search.toLowerCase().trim()
+    return products.filter((product) => {
+      const matchesSearch =
+        product.productName?.toLowerCase().includes(s) || product.category?.toLowerCase().includes(s)
+
+      const productCategory = (product.category || 'General').trim()
+      const matchesCategory = category === 'all' ? true : productCategory === category
+
+      return matchesSearch && matchesCategory
+    })
+  }, [products, search, category])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+
+  useEffect(() => {
+    // reset pagination when filters change
+    setPage(1)
+  }, [search, category])
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return filtered.slice(start, start + pageSize)
+  }, [filtered, page])
+
+  if (loading) return (
+    <div className="flex min-h-[240px] items-center justify-center p-6 text-center">
+      <div className="rounded-3xl bg-white/80 px-6 py-4 text-slate-700 shadow-sm">
+        Loading products...
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Products</h1>
+          <p className="text-sm text-slate-600">Manage inventory, pricing, and stock.</p>
+        </div>
+        <Link to="/products/add" className="rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">Add Product</Link>
+      </div>
+
+      <div className="rounded bg-white p-6 shadow-sm">
+        <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products..."
+            className="w-full rounded border px-4 py-3"
+          />
+
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full rounded border px-4 py-3"
+          >
+            <option value="all">All categories</option>
+            {categories.map((c) => (
+              <option value={c} key={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-700">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="px-3 py-3">Name</th>
+                <th className="px-3 py-3">Category</th>
+                <th className="px-3 py-3">Price</th>
+                <th className="px-3 py-3">Stock</th>
+                <th className="px-3 py-3">Status</th>
+                <th className="px-3 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((product) => {
+                const qty = product.quantity ?? 0
+                const isLow = qty <= 5
+                return (
+                  <tr key={product._id} className="border-b border-slate-100 hover:bg-slate-50">
+                    <td className="px-3 py-3 font-medium">{product.productName}</td>
+                    <td className="px-3 py-3">{product.category || 'General'}</td>
+                    <td className="px-3 py-3">₹{(product.price ?? 0).toFixed(2)}</td>
+                    <td className="px-3 py-3 font-semibold">{qty}</td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${isLow ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}
+                      >
+                        {isLow ? 'Low' : 'OK'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 space-x-2">
+                      <Link to={`/products/edit/${product._id}`} className="rounded bg-slate-800 px-3 py-2 text-xs text-white">Edit</Link>
+                      <button onClick={() => deleteProduct(product._id)} className="rounded bg-rose-600 px-3 py-2 text-xs text-white">Delete</button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+
+          {filtered.length === 0 && (
+            <div className="mt-4 text-center text-slate-500">No products found</div>
+          )}
+        </div>
+
+        {filtered.length > 0 && (
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-slate-600">
+              Page {page} of {totalPages}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="rounded border px-3 py-2 text-sm disabled:opacity-50"
+              >
+                Prev
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .slice(Math.max(0, page - 3), Math.min(totalPages, page + 2))
+                  .map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => setPage(num)}
+                      className={`rounded border px-3 py-2 text-sm ${num === page ? 'bg-slate-800 text-white' : 'bg-white text-slate-700'}`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+              </div>
+
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="rounded border px-3 py-2 text-sm disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+>>>>>>> 7cb91e5b12c21805bdde6bd111d24443b84661d9
+    </div>
+
+    <Link
+      to="/products/add"
+      className="
+      rounded-2xl
+      bg-orange-500
+      px-5
+      py-3
+      font-medium
+      text-white
+      transition-all
+      duration-300
+      hover:-translate-y-1
+      hover:bg-orange-600
+      hover:shadow-lg
+      "
+    >
+      + Add Product
+    </Link>
+  </div>
+
+  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <input
+      type="text"
+      placeholder="Search products..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      className="
+      w-full
+      rounded-2xl
+      border
+      border-slate-200
+      px-4
+      py-3
+      outline-none
+      transition-all
+      duration-300
+      focus:border-orange-400
+      focus:ring-4
+      focus:ring-orange-100
+      "
+    />
+  </div>
+
+  <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="bg-slate-50 border-b border-slate-200">
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Product
+            </th>
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Category
+            </th>
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Price
+            </th>
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Stock
+            </th>
+            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Actions
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {filteredProducts.map((product) => (
+            <tr
+              key={product.id}
+              className="
+              border-b
+              border-slate-100
+              transition-all
+              duration-300
+              hover:bg-orange-50
+              "
+            >
+              <td className="px-6 py-5">
+                <div className="font-semibold text-slate-900">
+                  {product.productName}
+                </div>
+              </td>
+
+              <td className="px-6 py-5 text-slate-600">
+                {product.category}
+              </td>
+
+              <td className="px-6 py-5 font-medium text-slate-900">
+                ₹{product.price}
+              </td>
+
+              <td className="px-6 py-5">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    product.quantity <= 10
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-green-100 text-green-600'
+                  }`}
+                >
+                  {product.quantity} in stock
+                </span>
+              </td>
+
+              <td className="px-6 py-5">
+                <div className="flex gap-2">
+                  <button
+                    className="
+                    rounded-xl
+                    border
+                    border-slate-200
+                    px-4
+                    py-2
+                    text-sm
+                    font-medium
+                    transition-all
+                    duration-300
+                    hover:bg-slate-100
+                    "
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="
+                    rounded-xl
+                    bg-red-500
+                    px-4
+                    py-2
+                    text-sm
+                    font-medium
+                    text-white
+                    transition-all
+                    duration-300
+                    hover:bg-red-600
+                    "
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+)
+}
+
