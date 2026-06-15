@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // ==================== INDEXES ====================
-userSchema.index({ email: 1 });
+
 userSchema.index({ role: 1 });
 userSchema.index({ createdAt: -1 });
 
@@ -47,19 +47,14 @@ userSchema.index({ createdAt: -1 });
 /**
  * Pre-save middleware to hash password if modified
  */
-userSchema.pre('save', async function (next) {
-  // Only hash the password if it has been modified (or is new)
+userSchema.pre('save', async function () {
+  // Only hash the password if it has been modified
   if (!this.isModified('password')) {
-    return next();
+    return;
   }
 
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 /**

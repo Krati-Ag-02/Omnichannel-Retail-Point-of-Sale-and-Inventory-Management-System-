@@ -1,5 +1,6 @@
-import express from 'express';
 import dotenv from 'dotenv';
+import path from 'path'
+import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
@@ -8,8 +9,14 @@ import orderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 
+
 // Load environment variables
-dotenv.config();
+dotenv.config({
+  path: path.resolve('./ .env')
+});
+  console.log("JWT_SECRET:", process.env.JWT_SECRET);
+  console.log(process.cwd());
+
 
 const app = express();
 
