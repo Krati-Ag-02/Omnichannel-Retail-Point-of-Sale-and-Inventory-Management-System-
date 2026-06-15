@@ -12,7 +12,7 @@ import analyticsRoutes from './routes/analyticsRoutes.js';
 
 // Load environment variables
 dotenv.config({
-  path: path.resolve('./ .env')
+  path: path.resolve('./.env')
 });
   console.log("JWT_SECRET:", process.env.JWT_SECRET);
   console.log(process.cwd());

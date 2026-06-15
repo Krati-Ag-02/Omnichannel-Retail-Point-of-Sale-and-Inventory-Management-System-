@@ -11,7 +11,8 @@ const generateToken = (id) => {
     throw new Error('JWT_SECRET is not defined in environment variables');
   }
 
-  return jwt.sign({ id }, process.env.JWT_SECRET, { 
+  const payload = { id: String(id) };
+  return jwt.sign(payload, process.env.JWT_SECRET, { 
     expiresIn: '7d',
     algorithm: 'HS256'
   });
@@ -27,7 +28,10 @@ export const verifyToken = (token) => {
     throw new Error('JWT_SECRET is not defined in environment variables');
   }
 
-  return jwt.verify(token, process.env.JWT_SECRET);
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  // Ensure id is a string for consistent lookups
+  if (decoded && decoded.id) decoded.id = String(decoded.id);
+  return decoded;
 };
 
 /**
@@ -40,7 +44,8 @@ export const generateRefreshToken = (id) => {
     throw new Error('JWT_SECRET is not defined in environment variables');
   }
 
-  return jwt.sign({ id }, process.env.JWT_SECRET, { 
+  const payload = { id: String(id) };
+  return jwt.sign(payload, process.env.JWT_SECRET, { 
     expiresIn: '30d',
     algorithm: 'HS256'
   });
