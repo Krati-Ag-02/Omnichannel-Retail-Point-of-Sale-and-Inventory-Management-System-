@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
-import path from 'path'
+import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js';
@@ -9,13 +10,18 @@ import orderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 
-
-// Load environment variables
+// Load environment variables from backend/.env
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 dotenv.config({
-  path: path.resolve('./.env')
+  path: path.join(__dirname, '.env')
 });
-  console.log("JWT_SECRET:", process.env.JWT_SECRET);
-  console.log(process.cwd());
+
+if (!process.env.JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET is not defined in environment variables');
+  console.error('Make sure .env file exists in the backend directory with JWT_SECRET defined');
+  process.exit(1);
+}
 
 
 const app = express();
